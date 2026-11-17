@@ -167,7 +167,12 @@ function audioInit(){
   if(AC.state === 'suspended') AC.resume();
   if(soundMode === 0) musicStart();
 }
-document.addEventListener('visibilitychange', () => { if(!AC) return; if(document.hidden) AC.suspend(); else AC.resume(); });
+document.addEventListener('visibilitychange', () => { if(!AC) return; if(document.hidden) AC.suspend(); else if(soundMode < 2) AC.resume(); });
+/* 手機上「手指按下」不算使用者手勢，瀏覽器不准在那時開聲音；
+   要等放開（pointerup / touchend / click）才能解鎖，所以這些事件都要試著啟動一次 */
+for(const ev of ['pointerup','touchend','click','keydown']) addEventListener(ev, audioInit, {capture:true, passive:true});
+/* iPhone：讓網頁聲音不受側邊靜音鍵影響（Safari 16.4+ 才有） */
+try{ if(navigator.audioSession) navigator.audioSession.type = 'playback'; }catch(e){}
 
 /* 呆呆獸的叫聲：鋸齒波 + 兩個帶通濾波器模擬「呀～ん」的母音，尾巴滑到「ん」。
    音高、抖音、長短都跟著個性走 */
