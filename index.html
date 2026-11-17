@@ -2,7 +2,7 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <title>呆呆獸擠擠</title>
 <style>
   :root{
@@ -14,7 +14,19 @@
   canvas{display:block;position:fixed;inset:0}
   #fx{pointer-events:none}
   #hud{position:fixed;top:0;left:0;right:0;display:flex;align-items:center;gap:8px;
-    padding:10px 12px;pointer-events:none;z-index:2}
+    padding:calc(10px + env(safe-area-inset-top)) calc(12px + env(safe-area-inset-right)) 10px calc(12px + env(safe-area-inset-left));
+    pointer-events:none;z-index:2}
+  /* 手機：HUD 縮小，關卡名稱藏起來，避免按鈕被擠出畫面 */
+  @media (max-width:520px){
+    #hud{gap:5px;padding-left:calc(8px + env(safe-area-inset-left));padding-right:calc(8px + env(safe-area-inset-right));font-size:clamp(12px,3.9vw,15px)}
+    #lvl,#fill{padding:.45em .75em}
+    #lvl small{display:none}
+    #hud button{padding:.4em .5em;border-radius:12px;font-size:clamp(13px,4.2vw,16px)}
+    #tip{font-size:12px;bottom:calc(6px + env(safe-area-inset-bottom))}
+    .card{padding:18px 14px 14px}
+    #grid{gap:7px}
+    #grid button{padding:9px 2px;font-size:17px}
+  }
   #lvl{background:var(--card);border-radius:999px;padding:8px 16px;font-weight:800;
     box-shadow:0 3px 0 rgba(90,50,20,.25);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
   #lvl small{color:var(--muted);font-weight:700;margin-left:6px}
@@ -33,7 +45,7 @@
     background:rgba(15,50,75,.45);padding:16px}
   .ov.show{display:flex}
   .card{background:var(--card);border-radius:24px;padding:22px 22px 18px;max-width:420px;width:100%;
-    text-align:center;box-shadow:0 8px 0 rgba(90,50,20,.3);animation:pop .35s cubic-bezier(.2,1.6,.4,1)}
+    text-align:center;box-shadow:0 8px 0 rgba(90,50,20,.3);max-height:calc(100vh - 32px);max-height:calc(100dvh - 32px);overflow:auto;animation:pop .35s cubic-bezier(.2,1.6,.4,1)}
   @keyframes pop{from{transform:scale(.6);opacity:0}to{transform:scale(1);opacity:1}}
   .card h2{margin:4px 0 6px;font-size:26px}
   .card p{margin:6px 0;color:var(--muted);font-weight:700}
@@ -222,20 +234,25 @@ function loadLevel(i){
     const p = makePiece(k, g, R, headFor(kind, g)); p.kind = kind; p.col = CATS[kind]; return p; });
   // 托盤中的順序打亂
   for(let k=pieces.length-1;k>0;k--){ const j=Math.floor(R()*(k+1)); [pieces[k],pieces[j]]=[pieces[j],pieces[k]]; }
-  layout(true);
   $('#winOv').classList.remove('show');
-  const rl = [];
-  if(board.throne) rl.push('👑 呆呆王的頭要坐王座');
-  if(board.wood) rl.push('🪵 超級呆殼獸不能壓木板');
-  if(board.curry) rl.push('🍛 伽勒爾呆呆獸的頭要碰到咖哩');
-  if(board.feud) rl.push('⚡ 兩隻王不能相鄰');
-  $('#tip').textContent = rl.length ? rl.join(' · ') : TIP;
+  setTip();
   const L = LEVELS[i];
   if(L.intro && !introSeen.has(i) && !progress.stars[i]){
     introSeen.add(i); $('#ruleIcon').textContent = L.intro[0]; $('#ruleTxt').innerHTML = L.intro[1]; $('#ruleOv').classList.add('show'); }
   updateHud(); updateUndo();
+  layout(true);   // 放在 HUD、說明文字更新之後，版面才會量到正確的高度
 }
-const TIP = document.querySelector('#tip').textContent, introSeen = new Set();
+/* 底部說明：規則關列出規則，窄螢幕用短版 */
+function setTip(){
+  const n = innerWidth < 520, rl = [];
+  if(board.throne) rl.push(n ? '👑 呆呆王頭坐王座' : '👑 呆呆王的頭要坐王座');
+  if(board.wood) rl.push(n ? '🪵 超級呆殼獸不壓木板' : '🪵 超級呆殼獸不能壓木板');
+  if(board.curry) rl.push(n ? '🍛 伽勒爾呆呆獸頭碰咖哩' : '🍛 伽勒爾呆呆獸的頭要碰到咖哩');
+  if(board.feud) rl.push(n ? '⚡ 兩王不相鄰' : '⚡ 兩隻王不能相鄰');
+  $('#tip').textContent = rl.length ? rl.join(' · ') : TIP;
+}
+const TOUCH = matchMedia('(pointer:coarse)').matches;
+const TIP = TOUCH ? '拖曳呆呆獸放上小島的石板 · 點一下旋轉 · 填滿所有格子就過關！' : document.querySelector('#tip').textContent, introSeen = new Set();
 
 /* 規則關：決定頭在哪一格，讓解答一定合規 */
 function headFor(kind, sol){
@@ -310,7 +327,9 @@ function pack(rect,u,gap){
 function layout(fresh){
   W = innerWidth; H = innerHeight; DPR = Math.min(devicePixelRatio||1, 2);
   cv.width = W*DPR; cv.height = H*DPR; cv.style.width = W+'px'; cv.style.height = H+'px';
-  const top = 62, bottom = W < 600 ? 52 : 36, pad = 14;
+  // 上下留白跟著 HUD、底部說明文字的實際高度走（手機瀏海、說明換行都不會被蓋到）
+  const top = $('#hud').getBoundingClientRect().bottom + 2;
+  const bottom = Math.max(36, H - $('#tip').getBoundingClientRect().top + 6), pad = W < 400 ? 10 : 14;
   const land = W > H*1.1;
   let br;
   if(land){
@@ -416,8 +435,9 @@ function win(){
 }
 
 function updateHud(){
-  $('#lvl').innerHTML = `第 ${level+1} 關<small>${LEVELS[level].name}</small>`;
-  $('#fill').textContent = `🐾 ${filled()} / ${board.total}`;
+  const narrow = innerWidth < 380;
+  $('#lvl').innerHTML = `${narrow ? '' : '第 '}${level+1} 關<small>${LEVELS[level].name}</small>`;
+  $('#fill').textContent = narrow ? `${filled()}/${board.total}` : `🐾 ${filled()} / ${board.total}`;
 }
 
 /* ---------- 粒子 ---------- */
@@ -834,7 +854,8 @@ function frame(now){
     const k = 1 - Math.pow(.0005, dt);
     const isDrag = drag && drag.p===p && drag.moved;
     p.dsc += ((isDrag ? 1 : p.sc) - p.dsc)*k;
-    if(isDrag){ p.dx = drag.px - drag.lx*S*p.dsc; p.dy = drag.py - drag.ly*S*p.dsc; }
+    if(isDrag){ drag.lv += (drag.lift - drag.lv)*k; p.y = drag.py - drag.ly*S - drag.lv;
+      p.dx = drag.px - drag.lx*S*p.dsc; p.dy = drag.py - drag.ly*S*p.dsc - drag.lv; }
     else { p.dx += (p.x-p.dx)*k; p.dy += (p.y-p.dy)*k; }
     p.rotAnim *= Math.pow(.0004, dt); if(p.rotAnim < .002) p.rotAnim = 0;
     p.sq += dt;
@@ -906,7 +927,9 @@ cv.addEventListener('pointerdown', e => {
   try{ cv.setPointerCapture(e.pointerId); }catch(_){}
   const u = S*p.dsc;
   drag = { p, id:e.pointerId, sx:e.clientX, sy:e.clientY, px:e.clientX, py:e.clientY,
-           lx:(e.clientX-p.dx)/u, ly:(e.clientY-p.dy)/u, moved:false };
+           lx:(e.clientX-p.dx)/u, ly:(e.clientY-p.dy)/u, moved:false, lv:0,
+           // 手指會擋住呆呆獸：觸控拖曳時把牠往上抬，讓手指在牠下面
+           lift: e.pointerType === 'touch' ? (dims(p).h - (e.clientY-p.dy)/u + .6)*S : 0 };
   pieces.splice(pieces.indexOf(p),1); pieces.push(p);
 });
 cv.addEventListener('pointermove', e => {
@@ -918,14 +941,14 @@ cv.addEventListener('pointermove', e => {
     if(drag.p.placed){ drag.p.placed = null; updateHud(); }
     sfx.pick(drag.p.col.pers && drag.p.col.pers.pitch); say(drag.p,'pick');
   }
-  if(drag.moved){ const p = drag.p; p.x = drag.px - drag.lx*S; p.y = drag.py - drag.ly*S; }
+  if(drag.moved){ const p = drag.p; p.x = drag.px - drag.lx*S; p.y = drag.py - drag.ly*S - drag.lv; }
 });
 function endDrag(e){
   if(!drag || e.pointerId !== drag.id) return;
   const d = drag; drag = null; cv.style.cursor = 'default';
   const p = d.p;
   if(!d.moved){ const b = snap(); rotate(p); commit(b); return; }
-  p.x = d.px - d.lx*S; p.y = d.py - d.ly*S;
+  p.x = d.px - d.lx*S; p.y = d.py - d.ly*S - d.lv;
   moves++;
   const a = anchorOf(p), geo = overBoard(p) && fits(p,a.r,a.c), why = geo ? ruleFail(p,a.r,a.c) : null;
   if(geo && !why) place(p,a.r,a.c);
@@ -940,7 +963,7 @@ addEventListener('keydown', e => {
   if(e.key==='r' || e.key==='R' || e.key===' '){ const p = (drag && drag.p) || hover; if(p){ e.preventDefault(); rotateWrap(p); } }
   if((e.ctrlKey || e.metaKey) && (e.key==='z' || e.key==='Z')){ e.preventDefault(); undo(); }
 });
-addEventListener('resize', () => { if(board) layout(false); });
+addEventListener('resize', () => { if(board){ updateHud(); setTip(); layout(false); } });
 
 /* ---------- 介面按鈕 ---------- */
 $('#bReset').onclick = () => { audioInit(); loadLevel(level); };
