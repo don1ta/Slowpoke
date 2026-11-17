@@ -57,6 +57,7 @@
   #grid button small{font-size:11px;color:var(--muted)}
   #grid button[disabled]{opacity:.45;cursor:default}
   #grid button.done{background:#ffe2b8}
+  .legal{font-size:11.5px !important;line-height:1.5;margin-top:12px !important}
 </style>
 </head>
 <body>
@@ -95,7 +96,9 @@
   <p>把每隻呆呆獸都擠上小島，一塊石板都不能空！</p>
   <div id="grid"></div>
   <div class="row"><button id="bClose">關閉</button></div>
+  <p class="legal">非官方粉絲作品 · 僅供學術與學習用途 · 非營利</p>
 </div></div>
+
 
 <script>
 (() => {
@@ -119,7 +122,8 @@ const LEVELS = [
   { name:'呆呆方塊', map:['AAABB','CADDB','CCDDB','ECFFG','EEEFG'] },
   { name:'木板橋', map:['ABCDD','ABCCD','ABBCD','AEFFG','EEEFG'], tiles:['.....','.....','WWWWW','.....','.....'], who:{E:3},
     intro:['🪵','背著灰色大殼的<b>超級呆殼獸</b>太重了，<br>任何一格都<b>不能壓在木板</b>上！'] },
-  { name:'階梯島', map:['A.....','AA....','BAC...','BBCD..','EBCDD.','EECDFF'] },
+  { name:'階梯島', map:['A.....','AA....','BAC...','BBCD..','EBCDD.','EECDFF'], flip:2,
+    intro:['🔄','有些呆呆獸<b>背對著你</b>在睡覺，<br>先<b>點一下</b>把牠翻過來，牠才肯上島！<br>翻過來時形狀會<b>左右相反</b>喔。'] },
   { name:'大家族', map:['AABBBB','CAADDE','CCFDDE','CGFFEE','GGGFHH'] },
   { name:'咖哩香', map:['AABBC','ABBDC','AE.DC','EEDDC','EFFFF'], tiles:['.....','....C','.....','.....','.....'], who:{C:1},
     intro:['🍛','黃色頭頂的<b>伽勒爾呆呆獸</b>是個貪吃鬼，<br>牠的<b>頭</b>要放在<b>咖哩</b>上或咖哩旁邊！'] },
@@ -127,14 +131,14 @@ const LEVELS = [
   { name:'終極擠擠', map:['.AABB.','CADBBE','CADDDE','CFGGEE','CFFGGH','.FIIIH'] },
   { name:'王的對決', map:['AAABB','CCABB','DCCEF','DGEEF','DGEFF','DGGHH'], tiles:['T....','.....','.....','.....','.....','.....'], who:{A:4,H:5}, feud:1,
     intro:['⚡','紫色王冠的<b>伽勒爾呆呆王</b>和<b>呆呆王</b>水火不容，<br>兩隻<b>不能相鄰</b>，一碰到就吵架！'] },
-  { name:'甜甜圈島', map:['ABBCCD','AABBCD','AE..CD','FE..GD','FEEHGG','FFHHHG'] },
-  { name:'長尾巴出沒', map:['ABBCC.','AABBC.','DAEFCG','DDEFFG','DHEEFG','.HIIIG'] },
+  { name:'甜甜圈島', map:['ABBCCD','AABBCD','AE..CD','FE..GD','FEEHGG','FFHHHG'], flip:2 },
+  { name:'長尾巴出沒', map:['ABBCC.','AABBC.','DAEFCG','DDEFFG','DHEEFG','.HIIIG'], flip:2 },
   { name:'王宮', map:['ABBCCD','AABBCD','EA..CD','EE..FD','EGFFFH','GGGHHH'], tiles:['......','..WW..','.W....','.W....','.C....','T.....'], who:{C:5,E:1,G:4,H:3}, feud:1,
     intro:['🏰','所有規則一起上！<br>王座、木板、咖哩，還有兩隻吵架的王。'] },
-  { name:'菱形島', map:['...A...','..AAB..','.CCABD.','CCEFBDD','.EEFBD.','..EGG..','...G...'] },
-  { name:'環礁', map:['..AAAA..','.BBCCCD.','BBE..CDD','EEE..FFD','.GGGHFF.','..GHHH..'] },
-  { name:'呆山呆海', map:['AAABCCD','AEFBBCD','EEFBGCD','EHFFGGD','IHHJJGK','IHJJKKK'] },
-  { name:'呆呆王國', map:['ABCCDD','ABBCCD','AEBFGD','AEFFGG','EEHFIG','JJHHIK','JJHIIK'], tiles:['....T.','.....W','.....W','..W..W','..W..W','C....W','......'], who:{D:4,E:1,I:5,J:3}, feud:1 },
+  { name:'菱形島', map:['...A...','..AAB..','.CCABD.','CCEFBDD','.EEFBD.','..EGG..','...G...'], flip:2 },
+  { name:'環礁', map:['..AAAA..','.BBCCCD.','BBE..CDD','EEE..FFD','.GGGHFF.','..GHHH..'], flip:3 },
+  { name:'呆山呆海', map:['AAABCCD','AEFBBCD','EEFBGCD','EHFFGGD','IHHJJGK','IHJJKKK'], flip:3 },
+  { name:'呆呆王國', map:['ABCCDD','ABBCCD','AEBFGD','AEFFGG','EEHFIG','JJHHIK','JJHIIK'], tiles:['....T.','.....W','.....W','..W..W','..W..W','C....W','......'], who:{D:4,E:1,I:5,J:3}, feud:1, flip:2 },
 ];
 
 const CATS = [
@@ -269,6 +273,7 @@ const sfx = {
   rot(){ tone(640,900,.06,'triangle',.06); },
   place(pt=1){ tone(700*pt,1050*pt,.09,'sine',.1); tone(1050*pt,620*pt,.18,'sine',.08,.08); },
   bad(){ tone(220,150,.14,'square',.035); },
+  flip(){ tone(300,900,.16,'triangle',.07); tone(900,1400,.1,'sine',.05,.14); },
   win(){ [523,659,784,1047,1319].forEach((f,i)=>tone(f,f*1.01,.25,'triangle',.09,i*.1)); }
 };
 
@@ -297,6 +302,23 @@ function parseLevel(i){
 function dims(p){ let h=0,w=0; for(const [r,c] of p.cells){ if(r+1>h)h=r+1; if(c+1>w)w=c+1; } return {w,h}; }
 function rebuild(p){ p.set = new Set(p.cells.map(([r,c])=>K(r,c))); }
 function has(p,r,c){ return r>=0 && c>=0 && p.set.has(K(r,c)); }
+function mirrorCells(p){ const {w}=dims(p); p.cells = p.cells.map(([r,c])=>[r,w-1-c]); rebuild(p); }
+/* 翻面後形狀會不一樣嗎？（L/J、S/Z 這種左右相反的形狀） */
+function chiral(p){
+  const key = cs => { const r0 = Math.min(...cs.map(a=>a[0])), c0 = Math.min(...cs.map(a=>a[1]));
+    return cs.map(([r,c]) => (r-r0)*100 + (c-c0)).sort((a,b)=>a-b).join(); };
+  let cs = p.cells.map(([r,c]) => [r,-c]); const m = key(cs);
+  cs = p.cells;
+  for(let k=0;k<4;k++){ if(key(cs) === m) return false; cs = cs.map(([r,c]) => [c,-r]); }
+  return true;
+}
+function flip(p){
+  if(!p.back || won) return;
+  mirrorCells(p); p.back = false; p.flipT = 0;
+  if(!p.placed) sendHome(p);
+  sfx.flip(); say(p, 'flip', FLIP_LINES[Math.floor(Math.random()*FLIP_LINES.length)]);
+}
+const FLIP_LINES = ['……咦？天亮了？', '翻過來了～', '呀～ん（醒了）', '剛剛在作夢…'];
 function rotateCells(p){ const {h}=dims(p); p.cells = p.cells.map(([r,c])=>[c,h-1-r]); rebuild(p); }
 
 function makePiece(id, sol, R, force){
@@ -319,6 +341,7 @@ function makePiece(id, sol, R, force){
 
 function loadLevel(i){
   level = i; board = parseLevel(i); won = false; moves = 0; hints = 0; startT = performance.now();
+  if(progress.cur !== i){ progress.cur = i; store.set(progress); }   // 記住正在玩哪一關，重新打開時回到這裡
   drag = null; hover = null; particles = []; history = [];
   const R = rng(1234 + i*977);
   // 有規則的種類只能是關卡指定的那隻，其他隨機分配時要避開
@@ -328,6 +351,10 @@ function loadLevel(i){
   pieces = board.groups.map(([ch,g],k) => {
     const kind = board.who[ch] ?? pal[n++ % pal.length];
     const p = makePiece(k, g, R, headFor(kind, g)); p.kind = kind; p.col = CATS[kind]; return p; });
+  // 背對你睡覺的呆呆獸：形狀左右相反，要先點一下翻過來（優先挑翻面後形狀會不同的）
+  const nf = LEVELS[i].flip || 0;
+  if(nf){ const cand = [...pieces].sort((a,b) => (chiral(b) - chiral(a)) || (R() - .5));
+    for(const p of cand.slice(0, nf)){ mirrorCells(p); p.back = true; } }
   // 托盤中的順序打亂
   for(let k=pieces.length-1;k>0;k--){ const j=Math.floor(R()*(k+1)); [pieces[k],pieces[j]]=[pieces[j],pieces[k]]; }
   $('#winOv').classList.remove('show');
@@ -345,6 +372,7 @@ function setTip(){
   if(board.wood) rl.push(n ? '🪵 超級呆殼獸不壓木板' : '🪵 超級呆殼獸不能壓木板');
   if(board.curry) rl.push(n ? '🍛 伽勒爾呆呆獸頭碰咖哩' : '🍛 伽勒爾呆呆獸的頭要碰到咖哩');
   if(board.feud) rl.push(n ? '⚡ 兩王不相鄰' : '⚡ 兩隻王不能相鄰');
+  if(LEVELS[level].flip) rl.push(n ? '🔄 背對的點一下翻面' : '🔄 背對你的呆呆獸，點一下翻過來');
   $('#tip').textContent = rl.length ? rl.join(' · ') : TIP;
 }
 const TOUCH = matchMedia('(pointer:coarse)').matches;
@@ -364,6 +392,7 @@ function headFor(kind, sol){
 const NEAR = [[0,0],[1,0],[-1,0],[0,1],[0,-1]];
 /* 放在 (r0,c0) 會不會違反個性規則？違反就回傳牠要說的話 */
 function ruleFail(p, r0, c0){
+  if(p.back) return '先點我一下，幫我翻過來嘛～';
   const T = (r,c) => board.tile.get(K(r,c)), abs = p.cells.map(([r,c]) => [r0+r, c0+c]), [hr,hc] = abs[p.head];
   if(p.kind !== 4 && abs.some(([r,c]) => T(r,c) === 'T')) return '那是呆呆王的王座…';
   if(p.kind === 4 && board.throne && T(hr,hc) !== 'T') return '朕的頭要坐在王座上。';
@@ -376,6 +405,7 @@ function ruleFail(p, r0, c0){
   return null;
 }
 function ruleHint(p){
+  if(p.back) return '呼…呼…（還在睡）';
   if(p.kind === 4 && board.throne) return '朕要坐王座。';
   if(p.kind === 3 && board.wood) return '我太重了，別放木板上…';
   if(p.kind === 1 && board.curry) return '咖哩！我要聞咖哩！';
@@ -386,13 +416,13 @@ const legal = (p,r,c) => fits(p,r,c) && !ruleFail(p,r,c);
 
 /* ---------- 復原 ---------- */
 let history = [];
-const snap = () => JSON.stringify(pieces.map(p => [p.id, p.cells, p.placed]));
+const snap = () => JSON.stringify(pieces.map(p => [p.id, p.cells, p.placed, !!p.back]));
 function commit(before){ if(before !== snap()){ history.push(before); if(history.length > 300) history.shift(); } updateUndo(); }
 function updateUndo(){ const b = $('#bUndo'); if(b) b.disabled = !history.length || won; }
 function undo(){
   if(won || drag || !history.length) return;
-  for(const [id,cells,pl] of JSON.parse(history.pop())){
-    const p = pieces.find(q => q.id === id); p.cells = cells; rebuild(p);
+  for(const [id,cells,pl,bk] of JSON.parse(history.pop())){
+    const p = pieces.find(q => q.id === id); p.cells = cells; rebuild(p); p.back = bk; p.flipT = undefined;
     if(pl){ p.placed = pl; p.x = BX+pl.c*S; p.y = BY+pl.r*S; p.sc = 1; } else sendHome(p);
   }
   sfx.rot(); updateHud(); updateUndo();
@@ -444,6 +474,8 @@ function layout(fresh){
     if(!ok) S *= .92;
   }
   if(!ok){ TS=.42; pack({x:trayRect.x,y:trayRect.y,w:trayRect.w,h:1e6}, S*TS, 8); }
+  // 視窗還沒有大小時（背景分頁、剛轉向）pack 會失敗：先放托盤中央，等 resize 再排
+  for(const p of pieces) if(!p.slot) p.slot = {cx:trayRect.x+trayRect.w/2, cy:trayRect.y+trayRect.h/2};
   BX = br.x + (br.w - board.cols*S)/2; BY = br.y + (br.h - board.rows*S)/2;
   for(const p of pieces){
     if(p.placed){ p.x = BX+p.placed.c*S; p.y = BY+p.placed.r*S; p.sc = 1; }
@@ -509,7 +541,7 @@ function hint(){
   const want = new Set(p.sol.map(([r,c])=>K(r,c)));
   for(const q of pieces) if(q!==p && q.placed && q.cells.some(([r,c])=>want.has(K(q.placed.r+r,q.placed.c+c)))) sendHome(q);
   const minR = Math.min(...p.sol.map(a=>a[0])), minC = Math.min(...p.sol.map(a=>a[1]));
-  p.cells = p.sol.map(([r,c])=>[r-minR,c-minC]); rebuild(p);
+  p.cells = p.sol.map(([r,c])=>[r-minR,c-minC]); rebuild(p); p.back = false;
   pieces.splice(pieces.indexOf(p),1); pieces.push(p);
   hints++; place(p,minR,minC);
 }
@@ -520,6 +552,7 @@ function win(){
   const st = hints===0 ? 3 : hints<=2 ? 2 : 1;
   progress.unlocked = Math.max(progress.unlocked, Math.min(LEVELS.length, level+2));
   progress.stars[level] = Math.max(progress.stars[level]||0, st);
+  if(level < LEVELS.length-1) progress.cur = level+1;   // 過關後重新打開，直接接下一關
   store.set(progress);
   for(let k=0;k<40;k++) confetti();
   setTimeout(() => {
@@ -531,7 +564,7 @@ function win(){
 }
 
 function updateHud(){
-  const narrow = innerWidth < 380;
+  const narrow = innerWidth < 430;
   $('#lvl').innerHTML = `${narrow ? '' : '第 '}${level+1} 關<small>${LEVELS[level].name}</small>`;
   $('#fill').textContent = narrow ? `${filled()}/${board.total}` : `🐾 ${filled()} / ${board.total}`;
 }
@@ -732,6 +765,10 @@ function drawCat(p, t, dt = 0){
   if(stomp || laugh){ const cx = ox+d.w*u/2, cy = oy+d.h*u/2, sc = 1 + stomp*.06;
     ctx.translate(cx + (laugh ? Math.sin(t*30)*u*.02 : 0), cy - stomp*u*.12); ctx.scale(sc,sc); ctx.translate(-cx,-cy); }
   if(p.rotAnim > .001){ const cx = ox+d.w*u/2, cy = oy+d.h*u/2; ctx.translate(cx,cy); ctx.rotate(-p.rotAnim); ctx.translate(-cx,-cy); }
+  // 翻面動畫：左右壓扁再展開（前半段畫成原本的背面，用鏡像還原舊形狀）
+  const showBack = p.back || (p.flipT !== undefined && p.flipT < .5);
+  if(p.flipT !== undefined){ const cx = ox+d.w*u/2, cy = oy+d.h*u/2, sx = -Math.cos(Math.PI*p.flipT);
+    ctx.translate(cx,cy); ctx.scale(Math.sign(sx||1)*Math.max(.05,Math.abs(sx)), 1 + Math.sin(Math.PI*p.flipT)*.12); ctx.translate(-cx,-cy); }
   if(won){ const b = 1 + Math.sin(t*3 + p.id)*.015; const cx = ox+d.w*u/2, cy = oy+d.h*u/2; ctx.translate(cx,cy); ctx.scale(b,b); ctx.translate(-cx,-cy); }
   if(p.sq < 1.2){ // 放下時果凍彈一下
     const j = pe.heavy ? Math.exp(-p.sq*3)*Math.cos(p.sq*13)*.14 : Math.exp(-p.sq*5)*Math.cos(p.sq*22)*.09, cx = ox+d.w*u/2, cy = oy+d.h*u/2;
@@ -760,7 +797,7 @@ function drawCat(p, t, dt = 0){
       ctx.fillStyle = col.cape; ctx.fillRect(x-u*.6,y-u*.6,u*1.2,u*1.2);
       ctx.strokeStyle = 'rgba(255,255,255,.13)'; ctx.lineWidth = u*.07;
       for(const k of [-.24,0,.24]){ ctx.beginPath(); if(vert){ ctx.moveTo(x+k*u,y-u*.6); ctx.lineTo(x+k*u,y+u*.6); } else { ctx.moveTo(x-u*.6,y+k*u); ctx.lineTo(x+u*.6,y+k*u); } ctx.stroke(); }
-    } else if(col.belly){
+    } else if(col.belly && !showBack){
       ctx.fillStyle = col.belly; ctx.beginPath(); ctx.ellipse(x,y,vert?u*.24:u*.36,vert?u*.36:u*.24,0,0,E); ctx.fill();
       ctx.strokeStyle = 'rgba(120,100,60,.35)'; ctx.lineWidth = u*.025;
       for(const k of [-.13,.13]){ ctx.beginPath();
@@ -779,6 +816,11 @@ function drawCat(p, t, dt = 0){
       if(dr){ ctx.moveTo(mx-u*.45,my); ctx.quadraticCurveTo(mx,my+u*.12,mx+u*.45,my); }
       else { ctx.moveTo(mx,my-u*.45); ctx.quadraticCurveTo(mx+u*.12,my,mx,my+u*.45); }
       ctx.stroke(); }));
+  }
+  if(showBack){ // 背面：顏色暗一點，背上一排小圓點像脊椎
+    ctx.fillStyle = 'rgba(60,20,45,.16)'; ctx.fillRect(ox-u,oy-u,d.w*u+2*u,d.h*u+2*u);
+    ctx.fillStyle = 'rgba(255,255,255,.35)';
+    p.cells.forEach((q,i) => { if(i===p.head) return; ctx.beginPath(); ctx.arc(CX(i),CY(i),u*.06,0,E); ctx.fill(); });
   }
   const gr = ctx.createLinearGradient(ox,oy,ox,oy+d.h*u); gr.addColorStop(0,'rgba(255,255,255,.14)'); gr.addColorStop(1,'rgba(0,0,0,.08)');
   ctx.fillStyle = gr; ctx.fillRect(ox-u,oy-u,d.w*u+2*u,d.h*u+2*u);
@@ -832,6 +874,7 @@ function drawCat(p, t, dt = 0){
     if(pe.regal && react) mode = 'open';
     if(space) mode = 'open';
     p.mouthOpen = space || laugh || (pe.mouth && !calm);
+    if(showBack){ mode = 'back'; p.mouthOpen = false; }
     drawFace(u, col, mode, p);
     ctx.restore();
     p.headX = cx; p.headY = cy; }
@@ -862,6 +905,14 @@ function drawFace(u,col,mode,p){
     for(const k of [0,1]){ ctx.beginPath(); ctx.moveTo(-u*.1,-u*.25+k*u*.05); ctx.quadraticCurveTo(0,-u*.27+k*u*.05,u*.1,-u*.25+k*u*.05); ctx.stroke(); }
     ctx.restore(); }
   ctx.beginPath(); ctx.ellipse(0,0,u*.37,u*.33,0,0,E); ctx.lineWidth = u*.025; ctx.strokeStyle = OUT; ctx.stroke();
+  if(mode === 'back'){   // 背面：後腦勺，只看得到一撮翹毛和一點陰影
+    ctx.save(); ctx.beginPath(); ctx.ellipse(0,0,u*.37,u*.33,0,0,E); ctx.clip();
+    ctx.fillStyle = 'rgba(70,25,40,.16)'; ctx.beginPath(); ctx.ellipse(0,u*.2,u*.4,u*.22,0,0,E); ctx.fill(); ctx.restore();
+    ctx.lineWidth = u*.03; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(-u*.02,-u*.2); ctx.quadraticCurveTo(-u*.1,-u*.36,u*.04,-u*.38); ctx.stroke();
+    ctx.beginPath(); ctx.arc(u*.02,-u*.02,u*.07,Math.PI*.2,Math.PI*1.6); ctx.stroke();   // 髮旋
+    ctx.lineWidth = u*.025;
+  } else {
   // 眼睛
   if(col.sly){
     for(const s of [-1,1]){ ctx.save(); ctx.translate(s*u*.15,-u*.06); ctx.rotate(s*-.28);
@@ -894,6 +945,7 @@ function drawFace(u,col,mode,p){
     ctx.fillStyle = col.body; ctx.fill(); ctx.stroke();
     for(let k=-3;k<=3;k++) spike(k*u*.13,u*.3,0,-1,u,.13);
   }
+  }   // 正面結束
   // 頭上的大舌貝王冠
   if(col.crown){ const king = col.crown==='king', cc = king ? '#ebe9e3' : '#7d6aa8', dk = king ? '#c9c4b8' : '#56457f';
     for(const s of [-1,1]){ ctx.beginPath(); ctx.moveTo(s*u*.16,-u*.3);
@@ -955,6 +1007,9 @@ function frame(now){
     else { p.dx += (p.x-p.dx)*k; p.dy += (p.y-p.dy)*k; }
     p.rotAnim *= Math.pow(.0004, dt); if(p.rotAnim < .002) p.rotAnim = 0;
     p.sq += dt;
+    if(p.flipT !== undefined && (p.flipT += dt/.45) >= 1) p.flipT = undefined;
+    if(p.back && p.headX && Math.random() < dt*.5)   // 背對著睡覺：偶爾冒 z
+      particles.push({x:p.headX+S*p.dsc*.2, y:p.headY-S*p.dsc*.3, vx:8, vy:-25, life:1.6, t:0, kind:'z', s:S*p.dsc*.28});
   }
   if(won && (zTimer -= dt) < 0){ zTimer = .35; const p = pieces[Math.floor(Math.random()*pieces.length)];
     if(p.headX) particles.push({x:p.headX+S*.2,y:p.headY-S*.3,vx:10,vy:-30,life:1.8,t:0,kind:'z',s:S*.3}); }
@@ -979,6 +1034,7 @@ let bubbles = [], chatT = 4;
 function say(p, kind, text){
   const pe = p.col.pers; if(!pe) return;
   if(!text && kind === 'pick') text = ruleHint(p);
+  if(!text && kind === 'say' && p.back) text = 'Zzz…';
   const forced = !!text;
   if(!text){ const list = pe[kind] || pe.say; text = list[Math.floor(Math.random()*list.length)]; }
   bubbles = bubbles.filter(b => b.p !== p);
@@ -1045,7 +1101,7 @@ function endDrag(e){
   if(!drag || e.pointerId !== drag.id) return;
   const d = drag; drag = null; cv.style.cursor = 'default';
   const p = d.p;
-  if(!d.moved){ const b = snap(); rotate(p); commit(b); return; }
+  if(!d.moved){ const b = snap(); if(p.back) flip(p); else rotate(p); commit(b); return; }
   p.x = d.px - d.lx*S; p.y = d.py - d.ly*S - d.lv;
   moves++;
   const a = anchorOf(p), geo = overBoard(p) && fits(p,a.r,a.c), why = geo ? ruleFail(p,a.r,a.c) : null;
@@ -1090,7 +1146,8 @@ $('#bMenu').onclick = () => {
   $('#menuOv').classList.add('show');
 };
 
-loadLevel(Math.min(progress.unlocked-1, LEVELS.length-1));
+{ const last = Math.min(progress.unlocked-1, LEVELS.length-1), cur = progress.cur;
+  loadLevel(Number.isInteger(cur) && cur >= 0 && cur <= last ? cur : last); }
 requestAnimationFrame(frame);
 })();
 </script>
